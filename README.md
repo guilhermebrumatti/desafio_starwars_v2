@@ -144,10 +144,10 @@ RDS.
 print('Inicio do upload dos arquivos para o MySql no RDS AWS')
 
 # Dados do banco de dados AWS
-db_username = 'db_user1'
-db_password = 'Mhzl$j-Hb#A[f{'
-db_endpoint = 'database-startwars.cigmw4hnfxkc.us-east-1.rds.amazonaws.com'
-db_name = 'DBSTARWARS'
+db_username = 'db_user'
+db_password = 'PW'
+db_endpoint = 'endpoint_db'
+db_name = 'db_name'
 
 # URL de conexão do banco de dados
 db_url = f"mysql+mysqlconnector://{db_username}:{db_password}@{db_endpoint}/{db_name}"
@@ -185,5 +185,4 @@ Como plus:<br><br>
 7- No campo "Função do Lambda" selecionei o Lambda previamente criado.<br>
 8- Mantive as demais configurações em Default e finalizei a criação do evento.
 
-
-
+Fim!
