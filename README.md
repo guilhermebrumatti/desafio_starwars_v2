@@ -3,17 +3,38 @@
 Este é o desafio que já havia feito a algum tempo atrás.<br>
 Resolvi fazer novamente esse desafio, porém, implementando meus novos conhecimentos.
 
-Nele foram aplicados conhecimentos de ferramentas da versão 1.<br>
-Deixei outros fora, como o docker e airflow.<br>
+Como nesse intervalo eu aprendi novas tecnologias, fiz algumas alterações como<br>
+deixar de fora o docker e airflow.<br>
 <br>
 -Python - pandas<br>
 -Requests<br>
 -Banco de dados - sqlalchemy<br><br>
 Dessa vez utilizei serviços AWS.<br><br>
 -S3 - Bucket<br>
--RDS - Banco de dados<br><br>
+-RDS - Banco de dados<br>
+-LAMBDA<br>
+-EVENTBRIDGE<br><br>
 
-Bom, importei as bibliotecas necessarias:<br>
+Bom, com as configurações feitas na AWS e do "configure" do CLI, crei:<br><br>
+# Bucket S3<br><br>
+1- Acessei o S3 e cliquei em "Criar bucket"<br>
+2- Dei um nome ao bucket no campo "Nome do bucket"<br>
+3- Desmarquei a caixa "Bloquear todo o acesso público"<br>
+4- Depois cliquei em "Criar bucket"<br>
+5- De posse do nome do bucket, já será possível upar os arquivos para o bucket.
+
+# Banco de dados RDS<br><br>
+1- Acessei o RDS e cliquei em "Criar banco de dados"<br>
+2- Criação padrão<br>
+3- MySQL<br>
+4- Nível gratuito<br>
+5- Em "Identificador da instância de banco de dados" dei um nome ao Banco de dados<br>
+6- Criei o login e senha do usuário que vai acessar o banco, "Nome do usuário principal" e "Senha principal" respectivamente.<br>
+7- Em "Acesso público" selecionei "Sim"<br>
+8- Fiz as devidas configurações em "Grupos de segurança da VPC" do banco de dados<br>
+9- Depois que o banco de dados foi devidamente criado, já será possível pegar o endpoint e a porta para fazer a conexão com o banco<br>
+
+Iniciamos importando as bibliotecas necessárias:<br>
 
 ```
 import pandas as pd<br>
@@ -48,7 +69,8 @@ No bloco abaixo removi algumas colunas indesejadas.<br><br>
 As colunas characters, planets, starships, vehicles e species vieram com links que ao<br>
 abrir, eram novos JSONs com os dados dos planetas, veículos e etc, usados nos filmes.<br><br>
 Então foi necessário trabalha-los para obter os dados desses links e substituir os links<br>
-pelos respectivos dados.
+pelos respectivos dados.<br><br>
+Por fim, exportei os dados para .XLSX, .PARQUET e .JSON<br>
 ```
 # Remove a coluna 'url'
 df.drop('url', axis=1, inplace=True)
@@ -81,6 +103,9 @@ df.to_json('files/filmes.json', orient='records')
 
 print('Dados exportados para .xlsx, .parquet e .json')
 ```
+<br>
+No bloco de código abaixo, faço o upload dos arquivos exportados localmente<br>
+para o Bucket S3<br><br>
 
 ####################################################################<br>
 ######## BLOCO QUE SALVA ARQUIVOS COM OS RESULTADOS EM UM BUCKET ########<br>
@@ -106,6 +131,10 @@ upload_files_to_s3(file_paths, bucket_name)
 
 print('Fim do upload dos arquivos para o Bucket AWS!')
 ```
+<br>
+E no bloco de código abaixo, faço o insert dos dados do Dataframe no banco de dados<br>
+RDS.
+<br><br>
 
 ####################################################################<br>
 ######## BLOCO QUE FAZ O INSERT DOS DADOS NO BANCO DE DADOS RDS #########<br>
@@ -129,9 +158,8 @@ engine = create_engine(db_url)
 # Nome da tabela no banco de dados
 table_name = 'table_starwars'
 
-# Execute o INSERT no banco de dados
+# Executa o INSERT dos dados do Dataframe no banco de dados
 try:
-    # Inserindo os dados do DataFrame na tabela do banco de dados
     df.to_sql(name=table_name, con=engine, if_exists='append', index=False)
     print("Dados inseridos com sucesso na tabela table_starwars!")
 except Exception as e:
@@ -139,3 +167,23 @@ except Exception as e:
 
 print('ETL Finalizado!')
 ```
+
+# PLUS*
+Como plus:<br><br>
+
+# LAMBDA<br><br>
+1- Criei um Lambda<br>
+2- Criei uma camada para atender os requisitos(bibliotecas) que o código exige.<br>
+
+# EVENTBRIDGE<br><br>
+1- Em "Ônibus" -> "Regras", criei uma nova regra<br>
+2- Dei um nome, selecionei "Programação" e cliquei em Continuar no EventBridge Scheduler<br>
+3- Em "Ocorrência" selecionei a opção "Cronograma recorrente"<br>
+4- Em "Tipo de cronograma" selecionei a opção "Cronograma baseado em intervalor"<br>
+5- E em "Expressão rate" configurei para que o lambda seja executado 1 vez ao diade 12 em 12 horas<br>
+6- Em seguinda selecionei a opção "Destinos modelados" e escolhi "AWS Lambda Invoke"<br>
+7- No campo "Função do Lambda" selecionei o Lambda previamente criado.<br>
+8- Mantive as demais configurações em Default e finalizei a criação do evento.
+
+
+
